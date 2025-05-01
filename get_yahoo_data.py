@@ -162,7 +162,8 @@ print(print_time + ': stock/investor info loaded to sql db completed')
 #################################################################################################
 
 # creates table structure if dataframe changes
-#df_data.to_sql("yfinance_daily_stock_prices", schema="stg", con=engine, index=False, if_exists='replace', method='multi', chunksize=200) 
+#df_data.to_sql("yfinance_daily_stock_prices", schema="stg", con=engine, index=False, if_exists='replace', method='multi', chunksize=200)
+#create table manually and use varchar for date
 
 dailystockpricesfilename = "C:\\Users\\rickd\\Documents\\ACER\\ACER\\Sequelytics\\CV\\WorkSamples\\Python_Training\\YAHOO\\dailystockprices.csv"
 
