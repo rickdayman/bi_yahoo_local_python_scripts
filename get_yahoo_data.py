@@ -25,26 +25,6 @@ load_dotenv('C:\\bi_projects\\bi_yahoo_local_python_scripts\\project.env')
 SQLSERVERNAME = os.getenv('SQLSERVERNAME')
 SQLSERVERDATABASENAME = os.getenv('SQLSERVERDATABASENAME')
 
-###############################################################################################################
-# set up environment and start spark session
-###############################################################################################################
-
-# # could also add to environmental variables (system)
-# os.environ['PYSPARK_PYTHON'] = "C:\\Users\\rickd\\AppData\\Local\\Programs\\Python\\Launcher\\py.exe"
-# os.environ['PYSPARK_DRIVER_PYTHON'] = "C:\\Users\\rickd\\AppData\\Local\\Programs\\Python\\Launcher\\py.exe"
-
-# # could also add to this folder C:\Program Files\spark\jars (which i've done for the sql.write)
-# jdbcdriverpath = 'C:\\Program Files\\Java\\sqljdbc_12.8\\enu\\jars\\mssql-jdbc-12.8.1.jre8.jar'
-
-# spark = SparkSession.builder \
-#                             .master('local') \
-#                             .appName('pyspark playing') \
-#                             .config("spark.driver.extraClassPath", jdbcdriverpath) \
-#                             .getOrCreate()
-
-
-# https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions
-
 #################################################################################################
 # get start date from vw_ohlc_incremental_date
 #################################################################################################
@@ -71,7 +51,7 @@ ta_startdate = startdate + timedelta(days=-49)
 fx_gold_oil = ['GC=F','GBPUSD=X','EURUSD=X','USDJPY=X', 'CL=F', '^GSPC', 'BTC-USD']
 
 #symbolslist = pd.read_csv("C:\\Users\\rickd\\Documents\\ACER\\ACER\\Sequelytics\\CV\\WorkSamples\\Python_Training\\YAHOO\\stock_tickers.csv")
-symbolslist = pd.read_csv("C:\\Users\\rickd\\Documents\\ACER\\ACER\\Sequelytics\\CV\\WorkSamples\\Python_Training\\YAHOO\\stock_tickers_top_10.csv")
+symbolslist = pd.read_csv("C:\\bi_projects\\bi_data\\stock_tickers_top_10.csv")
 
 symbols = symbolslist['symbol'].to_list()
 
@@ -164,8 +144,14 @@ print(print_time + ': all stock/investor info completed')
 # quoted = urllib.parse.quote_plus("DRIVER={ODBC Driver 17 for SQL Server};SERVER=RICKVICTUS;DATABASE=YAHOO;Trusted_Connection=yes;")
 # engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted), fast_executemany=True)
 
-allholders.to_sql("yfinance_institutional_investors", schema="stg", con=engine, index=True, if_exists='replace', method='multi', chunksize=250)
+stockinfo_filename = "C:\\bi_projects\\bi_data\\stockinfo.csv"
+institutionalholders_filename = "C:\\bi_projects\\bi_data\\institutionalholders.csv"
+
+allholders.to_csv(institutionalholders_filename, encoding = 'utf-8', index = False)
+allinfo.to_csv(stockinfo_filename, encoding = 'utf-8', index = False)
+
 allinfo.to_sql("yfinance_stock_information", schema="stg", con=engine, index=True, if_exists='replace', method='multi', chunksize=10)
+allholders.to_sql("yfinance_institutional_investors", schema="stg", con=engine, index=True, if_exists='replace', method='multi', chunksize=250)
 
 print_time = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
 print(print_time + ': stock/investor info loaded to sql db completed')
@@ -179,7 +165,7 @@ print(print_time + ': stock/investor info loaded to sql db completed')
 #df_data.to_sql("yfinance_daily_stock_prices", schema="stg", con=engine, index=False, if_exists='replace', method='multi', chunksize=200)
 #create table manually and use varchar for date
 
-dailystockpricesfilename = "C:\\Users\\rickd\\Documents\\ACER\\ACER\\Sequelytics\\CV\\WorkSamples\\Python_Training\\YAHOO\\dailystockprices.csv"
+dailystockpricesfilename = "C:\\bi_projects\\bi_data\\dailystockprices.csv"
 
 # If file exists, delete it.
 if os.path.isfile(dailystockpricesfilename):
@@ -190,7 +176,6 @@ else:
 
 df_data.to_csv(dailystockpricesfilename, encoding = 'utf-8', index = False)
 
-#cnxn = pyodbc.connect('Trusted_Connection=yes', driver='{SQL Server}', server='RICKVICTUS', database='YAHOO')
 cnxn = pyodbc.connect('Trusted_Connection=yes', driver='{SQL Server}', server=SQLSERVERNAME, database=SQLSERVERDATABASENAME)
 cursor = cnxn.cursor()
 
