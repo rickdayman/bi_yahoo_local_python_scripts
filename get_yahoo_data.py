@@ -10,10 +10,20 @@ import talib as ta
 import urllib
 import pyodbc
 from sqlalchemy import create_engine
+from dotenv import load_dotenv
 
 run_start = time.time()
 print_time = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
 print(print_time + ': starting')
+
+###############################################################################################################
+# set up environmental variables
+###############################################################################################################
+
+load_dotenv('C:\\bi_projects\\bi_yahoo_local_python_scripts\\project.env')
+
+SQLSERVERNAME = os.getenv('SQLSERVERNAME')
+SQLSERVERDATABASENAME = os.getenv('SQLSERVERDATABASENAME')
 
 ###############################################################################################################
 # set up environment and start spark session
@@ -39,7 +49,11 @@ print(print_time + ': starting')
 # get start date from vw_ohlc_incremental_date
 #################################################################################################
 
-quoted = urllib.parse.quote_plus("DRIVER={ODBC Driver 17 for SQL Server};SERVER=RICKVICTUS;DATABASE=YAHOO;Trusted_Connection=yes;")
+quoted = urllib.parse.quote_plus("DRIVER={ODBC Driver 17 for SQL Server};"+
+                                 "SERVER={};".format(SQLSERVERNAME)+
+                                 "DATABASE={};".format(SQLSERVERDATABASENAME)+
+                                 "Trusted_Connection=yes;")
+
 engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted), fast_executemany=True)
 
 df_inc_date = pd.read_sql_query("SELECT incremental_date FROM dbo.vw_ohlc_incremental_date", con=engine)
@@ -176,7 +190,8 @@ else:
 
 df_data.to_csv(dailystockpricesfilename, encoding = 'utf-8', index = False)
 
-cnxn = pyodbc.connect('Trusted_Connection=yes', driver='{SQL Server}', server='RICKVICTUS', database='YAHOO')
+#cnxn = pyodbc.connect('Trusted_Connection=yes', driver='{SQL Server}', server='RICKVICTUS', database='YAHOO')
+cnxn = pyodbc.connect('Trusted_Connection=yes', driver='{SQL Server}', server=SQLSERVERNAME, database=SQLSERVERDATABASENAME)
 cursor = cnxn.cursor()
 
 cursor.execute("TRUNCATE TABLE stg.yfinance_daily_stock_prices")
