@@ -56,9 +56,11 @@ symbolslist = pd.read_csv("C:\\bi_projects\\bi_data\\stock_tickers_top_10.csv")
 symbols = symbolslist['symbol'].to_list()
 
 # print(symbols)
-symbols = ['AAPL', 'BRK-B', 'TSLA', 'NVDA', 'RKLB', 'META', 'MSTR', 'AVGO', 'JPM', 'AMZN']
+#symbols = ['AAPL', 'BRK-B', 'TSLA', 'NVDA', 'RKLB', 'META', 'MSTR', 'AVGO', 'JPM', 'AMZN']
 
 symbols = symbols + fx_gold_oil
+
+symbols = [symbol for symbol in symbols if isinstance(symbol, str)]
 
 #################################################################################################
 # get daily ohlc data from yahoo
@@ -86,8 +88,6 @@ df_data['adx_close'] = ta.ADX(df_data['high'], df_data['low'], df_data['close'],
 
 df_data = df_data[df_data.date > startdate]
 #df_data.reset_index()
-
-#print(df_data)
 
 print_time = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
 print(print_time + ': transform ohlc data complete')
